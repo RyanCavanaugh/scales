@@ -1,0 +1,14 @@
+{
+  "name": "scales",
+  "main": "scales.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/RyanCavanaugh/scales",
+  "authors": [
+    "Ryan Cavanaugh <RyanCavanaugh@users.noreply.github.com>"
+  ],
+  "license": "Apache",
+  "devDependencies": {
+    "react": "~0.13.3",
+    "requirejs": "~2.1.18"
+  }
+}

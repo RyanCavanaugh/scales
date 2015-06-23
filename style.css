@@ -1,0 +1,42 @@
+svg.scale {
+	width: 45em;
+	height: 14em;
+}
+
+div.ascii-scale {
+	font-family: 'Lucida Console', 'Courier New', 'monospace';
+	white-space: pre;
+}
+
+div.string-container {
+	margin: 0px;
+	padding: 0px;
+}
+
+div.string-container:first-child div.string {
+	border-top: solid 1px #EEE;
+}
+
+div.string {
+	display: inline-block;
+	border-bottom: solid 1px #EEE;
+
+	margin: 0px;
+	padding: 0px;
+
+	margin-top: 0.11em;
+}
+
+span.fret {
+	border-right: solid 1px #DDD;
+}
+span.nut {
+	font-weight: bold;
+}
+
+svg text {
+	font-family: 'Helvetica', 'Arial';
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+}
