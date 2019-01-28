@@ -1,4 +1,5 @@
 ﻿import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import * as Scales from './scales';
 
 interface ScaleProps extends React.Props<{}> {
@@ -87,16 +88,15 @@ class SvgScale extends React.Component<ScaleProps, {}> {
     }
 
     private renderFretMarkings() {
-        let importantFrets = [3, 5, 7, 10, 12, 15, 17];
+        let importantFrets = [0, 3, 5, 7, 10, 12, 15, 17];
         let results: JSX.Element[] = [];
         for(let f of importantFrets) {
-            results.push(<text x={this.xOfFret(f) - 9} y={this.yOfString(this.props.instrument.tuning.strings.length - 0.3) }>{f}</text>);
+            results.push(<text key={f} x={this.xOfFret(f) - 9} y={this.yOfString(this.props.instrument.tuning.strings.length - 0.3) }>{f}</text>);
         }
         return results;
     }
 
     private renderFrets() {
-        let frets = this.props.scale;
         let maxFret = this.getMaxFret();
         let result: JSX.Element[] = [];
         for (var i = 0; i < maxFret + 1; i++) {
@@ -145,7 +145,7 @@ class SvgScale extends React.Component<ScaleProps, {}> {
 }
 
 
-let instrument = Scales.PredefinedInstruments.Guitar;
-let frettings = Scales.applyScaleToFretRange(new Scales.Scale(Scales.PredefinedScales.Major, Scales.Note.G), instrument, 0, 17);
-React.render(<AsciiScale instrument={instrument} scale={frettings} />, document.getElementById('viewer1'));
-React.render(<SvgScale instrument={instrument} scale={frettings} />, document.getElementById('viewer2'));
+let instrument = Scales.PredefinedInstruments.Banjo;
+let frettings = Scales.applyScaleToFretRange(new Scales.Scale(Scales.PredefinedScales.Major, Scales.Note.C), instrument, 0, 17);
+ReactDOM.render(<AsciiScale instrument={instrument} scale={frettings} />, document.getElementById('viewer1'));
+ReactDOM.render(<SvgScale instrument={instrument} scale={frettings} />, document.getElementById('viewer2'));

@@ -1,12 +1,11 @@
 {
 	"files": [
 		"scales.ts",
-		"app.tsx",
-		"../DefinitelyTyped/React/react-jsx.d.ts"
+		"app.tsx"
 	],
 	"compilerOptions": {
 		"module": "amd",
+		"moduleResolution": "node",
 		"jsx": "react"
 	}
-
 }

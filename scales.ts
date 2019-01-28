@@ -141,10 +141,10 @@ export class Fretting {
 }
 
 export namespace PredefinedScales {
-    export var Major = new ScalePattern("Major", 2, 2, 1, 2, 2, 2, 1);
-    export var Minor = new ScalePattern("Minor", 2, 1, 2, 2, 1, 2, 2);
-    export var PentatonicMajor = new ScalePattern("Pentatonic Major", 2, 2, 3, 2, 3);
-    export var PentatonicMinor = new ScalePattern("Penatonic Minor", 3, 2, 2, 3, 2);
+    export const Major = new ScalePattern("Major", 2, 2, 1, 2, 2, 2, 1);
+    export const Minor = new ScalePattern("Minor", 2, 1, 2, 2, 1, 2, 2);
+    export const PentatonicMajor = new ScalePattern("Pentatonic Major", 2, 2, 3, 2, 3);
+    export const PentatonicMinor = new ScalePattern("Penatonic Minor", 3, 2, 2, 3, 2);
 
     export var ScaleList = [
         Major, Minor, PentatonicMajor, PentatonicMinor
