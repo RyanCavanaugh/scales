@@ -1,64 +1,36 @@
-﻿/// Returns a list of keys (strings) in an enum lookup object
-function getEnumNames(enumType: { [s: number]: string; }): string[] {
-    var names: string[] = [];
-    for (var n in enumType) {
-        if (typeof enumType[n] === 'number' && typeof enumType[enumType[n]] === 'string') names.push(n);
-    }
-    return names;
-}
+﻿/// Denotes a named note, also known as a pitch class. This is different from a pitch, which is an actual frequency
+export type Note = "C" | "C♯" | "D" | "D♯" | "E" | "F" | "F♯" | "G" | "G♯" | "A" | "A♯" | "B";
+const Octave = 12;
+export const NoteNames: ReadonlyArray<Note> = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
 
-/// Returns a list of values (numbers) in an enum lookup object
-function getEnumValues<T>(enumType: { [s: number]: string; }): T[] {
-    var values: T[] = [];
-    for (var n in enumType) {
-        if (typeof enumType[n] === 'string' && typeof enumType[enumType[n]] === 'number') values.push(<T><any>enumType[enumType[n]]);
-    }
-    return values;
-}
-
-/// Denotes a named note, also known as a pitch class. This is different from a pitch, which is an actual frequency
-export enum Note {
-    C, 'C♯',
-    D, 'D♯',
-    E,
-    F, 'F♯',
-    G, 'G♯',
-    A, 'A♯',
-    B,
-    Octave
+export function offsetOfNote(note: Note): number {
+    return NoteNames.indexOf(note);
 }
 
 /// Given a string, e.g. "A#", return the corresponding note
 export function parseNote(s: string): Note {
-    return Note[s.replace('#', '♯')];
+    return s.replace('#', '♯') as Note;
 }
-
-export function noteToString(n: Note): string {
-    return Note[n];
-}
-
-/// A list containing all of the named notes (A through G#)
-export var NoteValues = getEnumValues<Note>(Note).filter(n => n !== Note.Octave);
 
 /// A pitch (i.e. frequency) is a combination of a pitch and an octave, e.g. C4 is Middle C.
-/// This class is intended to be immutable.
-export class Pitch {
-    public value = this.note + this.octave * Note.Octave;
-
-    constructor(public note: Note, public octave: number) { }
-
-    /// Parses a pitch from a string value, e.g. "A4" -> [A, 4]
-    static parse(s: string): Pitch {
-        var parse = /([A-Z][#♯]?)([0-9])/.exec(s);
-        if (parse === null) throw new Error('Invalid pitch ' + s);
-        var note = parseNote(parse[1]);
-        return new Pitch(note, parseInt(parse[2]));
-    }
-
-    /// Given a number (retrieved from some other pitch's "value" property, return the corresponding pitch
-    static fromValue(val: number): Pitch {
-        return new Pitch(val % Note.Octave, Math.floor(val / Note.Octave));
-    }
+export type Pitch = {
+    readonly note: Note,
+    readonly octave: number;
+    readonly value: number;
+};
+export function createPitch(note: Note, octave: number): Pitch {
+    return { note, octave, value: offsetOfNote(note) + octave * 12 };
+}
+/// Parses a pitch from a string value, e.g. "A4" -> [A, 4]
+export function parsePitch(name: string) {
+    var parse = /([A-Z][#♯]?)([0-9])/.exec(name);
+    if (parse === null) throw new Error('Invalid pitch ' + name);
+    var note = parseNote(parse[1]);
+    return createPitch(note, parseInt(parse[2]));
+}
+/// Given a number (retrieved from some other pitch's "value" property, return the corresponding pitch
+export function pitchFromValue(value: number) {
+    return createPitch(NoteNames[value % 12], Math.floor(value / 12));
 }
 
 /// Defines a scale pattern, e.g. the major scale that consists of
@@ -81,20 +53,26 @@ export class ScalePattern {
 
 /// Defines a scale, which is a Scale Pattern along with a root Note. Note
 /// that this is not a pitch-based scale.
+type Scale = {
+    readonly pattern: ScalePattern,
+    readonly root: Note
+};
+export function createScale(pattern: ScalePattern, root: Note): Scale {
+    return { pattern, root };
+}
+export function scaleContainsNote(scale: Scale, note: Note) {
+    const noteValue = offsetOfNote(note);
+    const rootValue = offsetOfNote(scale.root);
+    return scale.pattern.offsets.indexOf((Octave + (noteValue - rootValue)) % Octave) >= 0;
+}
+export function scaleContainsPitch(scale: Scale, pitch: Pitch) {
+    return scaleContainsNote(scale, pitch.note);
+}
+
+/*
 export class Scale {
     constructor(public pattern: ScalePattern, public root: Note) { }
 
-    public contains(note: Note): boolean;
-    public contains(pitch: Pitch): boolean;
-    public contains(noteOrPitch: any): boolean {
-        var note: Note;
-        if (typeof noteOrPitch === 'number') {
-            note = noteOrPitch;
-        } else {
-            note = (<Pitch>noteOrPitch).note;
-        }
-        return this.pattern.offsets.indexOf((Note.Octave + (note - this.root)) % Note.Octave) >= 0;
-    }
 
     public ordinalOf(note: Note): number;
     public ordinalOf(pitch: Pitch): number;
@@ -109,6 +87,7 @@ export class Scale {
         return this.pattern.offsets.indexOf((Note.Octave + (note - this.root)) % Note.Octave);
     }
 }
+*/
 
 /// Defines a tuning pattern for a stringed instrument
 export class Tuning {
@@ -123,7 +102,7 @@ export class Tuning {
             strings = strings[0];
         }
         if (typeof strings[0] === 'string') {
-            strings = strings.map(s => Pitch.parse(s));
+            strings = strings.map(s => parsePitch(s));
         }
         this.strings = strings;
         this.strings.reverse();
@@ -145,9 +124,10 @@ export namespace PredefinedScales {
     export const Minor = new ScalePattern("Minor", 2, 1, 2, 2, 1, 2, 2);
     export const PentatonicMajor = new ScalePattern("Pentatonic Major", 2, 2, 3, 2, 3);
     export const PentatonicMinor = new ScalePattern("Penatonic Minor", 3, 2, 2, 3, 2);
+    export const PentatonicBluegrass = new ScalePattern("Pentatonic Bluegrass", 2, 1, 1, 3, 2, 1, 2);
 
     export var ScaleList = [
-        Major, Minor, PentatonicMajor, PentatonicMinor
+        Major, Minor, PentatonicMajor, PentatonicMinor, PentatonicBluegrass
     ];
 }
 
@@ -171,7 +151,7 @@ export class Instrument {
 
     /// Calculates the fretting required to get the specified pitch on the given
     /// string. Returns undefined if this is impossible.
-    public getFretAtString(pitch: Pitch, stringIndex: number): number {
+    public getFretAtString(pitch: Pitch, stringIndex: number): number | undefined {
         var fret = pitch.value - this.tuning.strings[stringIndex].value;
         if (fret < 0) {
             return undefined;
@@ -181,11 +161,11 @@ export class Instrument {
     }
 
     public pitchAtFret(fretting: Fretting) {
-        return Pitch.fromValue(this.tuning.strings[fretting.stringIndex].value + fretting.fret);
+        return pitchFromValue(this.tuning.strings[fretting.stringIndex].value + fretting.fret);
     }
 
     public pitchAt(string: number, fret: number) {
-        return Pitch.fromValue(this.tuning.strings[string].value + fret);
+        return pitchFromValue(this.tuning.strings[string].value + fret);
     }
 }
 
@@ -202,21 +182,21 @@ export module PredefinedInstruments {
 
 /// Returns the index of the string that has the lowest pitch above a given value.
 function lowestString(instr: Instrument, minimum = -Infinity) {
-    var lowestString = undefined;
-    var lowestPitch = Infinity;
+    let lowestString = undefined;
+    let lowestPitch = Infinity;
     for (var i = 0; i < instr.tuning.strings.length; i++) {
         if ((instr.tuning.strings[i].value < lowestPitch) && (instr.tuning.strings[i].value > minimum)) {
             lowestString = i;
             lowestPitch = instr.tuning.strings[i].value;
         }
     }
-    return lowestString;
+    return lowestString!;
 }
 
 /// Attempts to apply the scale to the instrument over the specified fret range,
 /// returning undefined if this isn't possible to do so continuously, or a set
 /// of frettings otherwise. 
-export function applyScaleToFretRange(scale: Scale, instr: Instrument, minimumFret: number, maximumFret: number): Fretting[] {
+export function applyScaleToFretRange(scale: Scale, instr: Instrument, minimumFret: number, maximumFret: number): undefined | Fretting[] {
     // Algorithm:
     // Start with the lowest string / lowest fret, walk up and add
     // matching notes from the scale to the frettings. When we encounter
@@ -232,7 +212,7 @@ export function applyScaleToFretRange(scale: Scale, instr: Instrument, minimumFr
     var currentFret = minimumFret;
     while (true) {
         var currentPitch = instr.pitchAt(currentString, currentFret);
-        if (scale.contains(currentPitch)) {
+        if (scaleContainsPitch(scale, currentPitch)) {
             if (currentFret > maximumFret) {
                 // If we're at the highest string already, this is a successful application
                 if (getNextString() === undefined) {
@@ -267,71 +247,6 @@ export function applyScaleToFretRange(scale: Scale, instr: Instrument, minimumFr
 
         currentFret++;
     }
-
-    return null;
-}
-
-function generateScalePatternsOld(scale: Scale, instr: Instrument, maxSpread = 4, lastStartFret = 12): Fretting[][] {
-    var results: Fretting[][] = [];
-
-    for (var startFret = 0; startFret <= lastStartFret; startFret++) {
-        var success = true;
-
-        // Algorithm: Apply all the scale notes between the start and max fret. Once finished,
-        // reorder the frettings by pitch and check for gaps in the scale
-
-        var currentResult: Fretting[] = [];
-
-        for (var stringIndex = instr.tuning.strings.length - 1; stringIndex >= 0; stringIndex--) {
-            for (var fret = startFret; fret < startFret + maxSpread; fret++) {
-                var pitch = instr.pitchAt(stringIndex, fret);
-                if (scale.contains(pitch)) {
-                    currentResult.push(new Fretting(stringIndex, fret));
-                }
-            }
-        }
-
-        console.log('Candidate from fret ' + startFret + ' = ' + currentResult.map(f => {
-            return '(' + f.stringIndex + ', ' + f.fret + '): ' + Note[instr.pitchAtFret(f).note] + instr.pitchAtFret(f).octave + ' = ' + scale.ordinalOf(instr.pitchAtFret(f));
-        }).join('\n'));
-
-        var pitches = currentResult.map(fretting => instr.pitchAtFret(fretting));
-        pitches.sort((a, b) => a.value > b.value ? 1 : a.value < b.value ? -1 : 0);
-
-        //console.log('test ' + JSON.stringify(pitches));
-        //console.log('test ' + JSON.stringify(pitches.map(p => scale.ordinalOf(p))));
-        //console.log('test ' + JSON.stringify(currentResult));
-        var lastPitch = pitches[0];
-        for (var i = 1; i < pitches.length; i++) {
-            var thisPitch = pitches[i];
-            if (thisPitch.value <= lastPitch.value) {
-                // OK
-            } else {
-                var thisOrdinal = scale.ordinalOf(thisPitch);
-                var lastOrdinal = scale.ordinalOf(lastPitch);
-
-                if (thisOrdinal === lastOrdinal + 1) {
-                    // OK
-                } else if (thisOrdinal === 0 && lastOrdinal === scale.pattern.intervals.length - 1) {
-                    // OK
-                } else {
-                    console.log('break at ' + thisOrdinal + ' / ' + lastOrdinal);
-                    success = false;
-                    break;
-                }
-            }
-            lastPitch = thisPitch;
-        }
-
-        if (success) {
-            results.push(currentResult);
-        }
-    }
-
-    console.log('Generated ' + results.length + ' scales');
-    results = cullOverlappingPatterns(results);
-    console.log('Culled to ' + results.length);
-    return results;
 }
 
 /// Measures the maximum distance between two fingers needed to produce
@@ -380,7 +295,7 @@ function applyScale(scale: Scale, instr: Instrument, minimumFret = 0, maxFret = 
 
     while (string < instr.tuning.strings.length) {
         var pitch = instr.pitchAt(string, fret);
-        if (scale.contains(pitch)) {
+        if (scaleContainsPitch(scale, pitch)) {
             result.push(new Fretting(string, fret));
         }
         fret++;

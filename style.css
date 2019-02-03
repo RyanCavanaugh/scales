@@ -1,8 +1,3 @@
-svg.scale {
-	width: 45em;
-	height: 14em;
-}
-
 div.ascii-scale {
 	font-family: 'Lucida Console', 'Courier New', 'monospace';
 	white-space: pre;
@@ -34,9 +29,18 @@ span.nut {
 	font-weight: bold;
 }
 
+svg.scale {
+	width: 45em;
+	height: 14em;
+}
+
 svg text {
 	font-family: 'Helvetica', 'Arial';
 	font-weight: bold;
 	text-align: center;
 	vertical-align: middle;
+}
+
+svg text.twoChar {
+	transform: translateX(-2.5px);
 }

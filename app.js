@@ -159,7 +159,7 @@ define(["require", "exports", "react", "react-dom", "./scales"], function (requi
         return SvgScale;
     }(React.Component));
     var instrument = Scales.PredefinedInstruments.Banjo;
-    var frettings = Scales.applyScaleToFretRange(new Scales.Scale(Scales.PredefinedScales.Major, Scales.Note.C), instrument, 0, 17);
+    var frettings = Scales.applyScaleToFretRange(new Scales.Scale(Scales.PredefinedScales.PentatonicBluegrass, Scales.Note.C), instrument, 0, 17);
     ReactDOM.render(React.createElement(AsciiScale, { instrument: instrument, scale: frettings }), document.getElementById('viewer1'));
     ReactDOM.render(React.createElement(SvgScale, { instrument: instrument, scale: frettings }), document.getElementById('viewer2'));
 });

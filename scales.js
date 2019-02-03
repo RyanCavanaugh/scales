@@ -156,8 +156,9 @@ define(["require", "exports"], function (require, exports) {
         PredefinedScales.Minor = new ScalePattern("Minor", 2, 1, 2, 2, 1, 2, 2);
         PredefinedScales.PentatonicMajor = new ScalePattern("Pentatonic Major", 2, 2, 3, 2, 3);
         PredefinedScales.PentatonicMinor = new ScalePattern("Penatonic Minor", 3, 2, 2, 3, 2);
+        PredefinedScales.PentatonicBluegrass = new ScalePattern("Pentatonic Bluegrass", 2, 1, 1, 3, 2, 1, 2);
         PredefinedScales.ScaleList = [
-            PredefinedScales.Major, PredefinedScales.Minor, PredefinedScales.PentatonicMajor, PredefinedScales.PentatonicMinor
+            PredefinedScales.Major, PredefinedScales.Minor, PredefinedScales.PentatonicMajor, PredefinedScales.PentatonicMinor, PredefinedScales.PentatonicBluegrass
         ];
     })(PredefinedScales = exports.PredefinedScales || (exports.PredefinedScales = {}));
     /// Defines a stringed instrument. Instruments like the 5-string banjo,

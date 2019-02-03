@@ -4,8 +4,12 @@
 		"app.tsx"
 	],
 	"compilerOptions": {
-		"module": "amd",
-		"moduleResolution": "node",
-		"jsx": "react"
+		"strict": true,
+		"skipLibCheck": true,
+		"target": "es6",
+		"module": "esnext",
+		"jsx": "react",
+		"composite": true,
+		"noEmit": true
 	}
 }

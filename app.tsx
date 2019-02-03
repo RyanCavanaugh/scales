@@ -1,20 +1,30 @@
 ﻿import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import * as Scales from './scales';
+import * as Scales from './scales.js';
+
+function classNames(obj: {[k: string]: boolean}) {
+    return Object.keys(obj).filter(k => obj[k]).join(",");
+}
 
 interface ScaleProps extends React.Props<{}> {
     instrument: Scales.Instrument;
     scale: Scales.Fretting[];
 }
 
+function makeNumericArray(length: number): number[] {
+    const arr = [];
+    for (let i = 0; i < length; i++) arr.push(i);
+    return arr;
+}
+
 interface ScaleStringProps extends ScaleProps { stringIndex: number; }
 class AsciiScaleString extends React.Component<ScaleStringProps, {}> {
     render() {
         let maxFret = this.props.scale.reduce((oldMax, value) => Math.max(oldMax, value.fret), 0);
-        let range = Array.apply(null, { length: maxFret }).map(Number.call, Number);
+        let range = makeNumericArray(maxFret);
         range[0] = 0;
         return <div className="string-container"><div className="string">
-            <span className="string-name">{Scales.noteToString(this.props.instrument.tuning.strings[this.props.stringIndex].note) }</span>
+            <span className="string-name">{this.props.instrument.tuning.strings[this.props.stringIndex].note}</span>
             <span className="nut">|</span>
             {
             range.map((_$, i) =>
@@ -63,11 +73,10 @@ class AsciiScale extends React.Component<ScaleProps, {}> {
 
     render() {
         return <div className="ascii-scale">
-            {this.props.instrument.tuning.strings.map((_$, i) => <AsciiScaleString stringIndex={i} key={i} {...this.props} />) }
+            {this.props.instrument.tuning.strings.map((_$, i) => <AsciiScaleString stringIndex={i} key={i} instrument={this.props.instrument} scale={this.props.scale} />) }
         </div>;
     }
 }
-
 
 class SvgScale extends React.Component<ScaleProps, {}> {
     private xOfFret(f: number, offset = false) {
@@ -116,15 +125,19 @@ class SvgScale extends React.Component<ScaleProps, {}> {
         return frets.map((f, i) => {
             let x = this.xOfFret(f.fret, true);
             let y = this.yOfString(f.stringIndex);
+            const label = this.props.instrument.pitchAtFret(f).note;
+            const classes = classNames({
+                "twoChar": label.length > 1
+            });
             return [
                 <circle r={15} stroke='gray' fill='black' cx={x} cy={y} key={'fretting_' + i} />,
-                <text x={x - 6} y={y + 6}  fill='white' key={'fretting_label_' + i}>{Scales.noteToString(this.props.instrument.pitchAtFret(f).note)}</text>
+                <text x={x - 6} y={y + 6}  fill='white' key={'fretting_label_' + i} className={classes}>{label}</text>
             ];
         });
     }
 
     private getMaxFret() {
-        return this.props.scale.reduce((oldMax, value) => Math.max(oldMax, value.fret), 0);;
+        return this.props.scale.reduce((oldMax, value) => Math.max(oldMax, value.fret), 0);
     }
 
     render() {
@@ -144,8 +157,7 @@ class SvgScale extends React.Component<ScaleProps, {}> {
 
 }
 
-
 let instrument = Scales.PredefinedInstruments.Banjo;
-let frettings = Scales.applyScaleToFretRange(new Scales.Scale(Scales.PredefinedScales.Major, Scales.Note.C), instrument, 0, 17);
-ReactDOM.render(<AsciiScale instrument={instrument} scale={frettings} />, document.getElementById('viewer1'));
-ReactDOM.render(<SvgScale instrument={instrument} scale={frettings} />, document.getElementById('viewer2'));
+let frettings = Scales.applyScaleToFretRange(Scales.createScale(Scales.PredefinedScales.PentatonicBluegrass, "E"), instrument, 0, 17);
+ReactDOM.render(<AsciiScale instrument={instrument} scale={frettings!} />, document.getElementById('viewer1'));
+ReactDOM.render(<SvgScale instrument={instrument} scale={frettings!} />, document.getElementById('viewer2'));
